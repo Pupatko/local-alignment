@@ -67,15 +67,10 @@ def waterman_dna(seq1, seq2, score_matrix, traceback_matrix, score):
                 best_score = best
                 best_y, best_x = y, x
 
-    # print("score_matrix:\n")
-    # print(score_matrix)
-
-    # print("traceback_matrix:\n")
-    # print(traceback_matrix)
-
     return best_y, best_x
 
 
+# function to calculate the aligned seqs
 def traceback(seq1, seq2, best_y, best_x, traceback_matrix):
     aligned1 = []
     aligned2 = []

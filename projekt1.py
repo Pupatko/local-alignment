@@ -30,7 +30,9 @@ def score_dna(a, b):
         return MATCH
     else:
         return MISMATCH
-    
+
+
+# function to comapre the things in PROTEIN
 def score_protein(a, b):
     pam250  = substitution_matrices.load("PAM250")
     return pam250[a, b]

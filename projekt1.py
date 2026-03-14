@@ -26,39 +26,43 @@ def score(a, b):
         return MISMATCH
 
 # function implementing waterman for dna
-def waterman_dna(seq1, seq2):
+def waterman_dna(seq1, seq2, score_matrix, traceback_matrix):
+
+    seq1_len = len(seq1)
+    seq2_len = len(seq2)
+
     best_score = 0
     best_y = best_x = 0
 
-    for y in range(1, dna1_len + 1):
-        for x in range(1, dna2_len + 1):
-            d = dna_matrix_score[y-1 , x-1] + score(seq1[y-1], seq2[x-1])
-            u = dna_matrix_score[y-1 , x] + GAP
-            l = dna_matrix_score[y , x-1] + GAP
+    for y in range(1, seq1_len + 1):
+        for x in range(1, seq2_len + 1):
+            d = score_matrix[y-1 , x-1] + score(seq1[y-1], seq2[x-1])
+            u = score_matrix[y-1 , x] + GAP
+            l = score_matrix[y , x-1] + GAP
 
             best = max(0, d, u, l)
-            dna_matrix_score[y, x] = best
+            score_matrix[y, x] = best
 
             if best == 0:
-                dna_matrix_traceback[y, x] = STOP
+                traceback_matrix[y, x] = STOP
             elif best == d:
-                dna_matrix_traceback[y, x] = DIAG
+                traceback_matrix[y, x] = DIAG
             elif best == u:
-                dna_matrix_traceback[y, x] = UP
+                traceback_matrix[y, x] = UP
             else:
-                dna_matrix_traceback[y, x] = LEFT
+                traceback_matrix[y, x] = LEFT
 
             if best > best_score:
                 best_score = best
                 best_y, best_x = y, x
 
-    # print("dna_matrix_score:\n")
-    # print(dna_matrix_score)
+    # print("score_matrix:\n")
+    # print(score_matrix)
 
-    # print("dna_matrix_traceback:\n")
-    # print(dna_matrix_traceback)
+    # print("traceback_matrix:\n")
+    # print(traceback_matrix)
 
-    return best_score, best_y, best_x
+    return best_y, best_x
 
 # function implementing waterman for protein
 def waterman_protein(seq1, seq2):
@@ -93,16 +97,16 @@ def waterman_protein(seq1, seq2):
     # print("protein_matrix_traceback:\n")
     # print(protein_matrix_traceback)
 
-    return best_score, best_y, best_x
+    return best_y, best_x
 
-def traceback(seq1, seq2, best_y, best_x):
+def traceback(seq1, seq2, best_y, best_x, traceback_matrix):
     aligned1 = []
     aligned2 = []
 
     y, x = best_y, best_x
 
-    while dna_matrix_traceback[y, x] != STOP:
-        direction = dna_matrix_traceback[y, x]
+    while traceback_matrix[y, x] != STOP:
+        direction = traceback_matrix[y, x]
 
         if direction == DIAG:
             aligned1.append(seq1[y-1])
@@ -134,46 +138,69 @@ def print_aligned(aligned1, aligned2):
     print(f"\t\t{middle}")
     print(f"aligned2:\t{aligned2}")
 
+def main(path_file1, path_file2, dna):
+    file1_fasta_lines = open(f"{path_file1}" , "r").readlines()
+    file2_fasta_lines = open(f"{path_file2}" , "r").readlines()
 
-# dna seq
-dna1_fasta_lines = open("dna1.fasta" , "r").readlines()
-dna2_fasta_lines = open("dna2.fasta" , "r").readlines()
+    seq1 = get_seq(file1_fasta_lines)
+    seq2 = get_seq(file2_fasta_lines)
 
-dna1 = get_seq(dna1_fasta_lines)
-dna2 = get_seq(dna2_fasta_lines)
+    seq1_len = len(seq1)
+    seq2_len = len(seq2)
 
-dna1_len = len(dna1)
-dna2_len = len(dna2)
+    score_matrix = np.zeros((seq1_len + 1, seq2_len + 1))
+    traceback_matrix = np.zeros((seq1_len + 1, seq2_len + 1))
 
-dna_matrix_score = np.zeros((dna1_len + 1, dna2_len + 1))
-dna_matrix_traceback = np.zeros((dna1_len + 1, dna2_len + 1))
+    if dna:
+        best_y, best_x = waterman_dna(seq1, seq2, score_matrix, traceback_matrix)
+    else:
+        best_y, best_x = waterman_protein(seq1, seq2)
+    
+    aligned1, aligned2 = traceback(seq1, seq2, best_y, best_x, traceback_matrix)
 
-best_score, best_y, best_x = waterman_dna(dna1, dna2)
-# print(best_score, best_y, best_x)
+    print_aligned(aligned1, aligned2)
 
-aligned1, aligned2 = traceback(dna1, dna2, best_y, best_x)
+main("./dna1.fasta", "./dna2.fasta", 1)
 
-print_aligned(aligned1, aligned2)
+# # dna seq
+# dna1_fasta_lines = open("dna1.fasta" , "r").readlines()
+# dna2_fasta_lines = open("dna2.fasta" , "r").readlines()
 
-# protein seq
-protein1_fasta_lines = open("protein1.fasta" , "r").readlines()
-protein2_fasta_lines = open("protein2.fasta" , "r").readlines()
+# dna1 = get_seq(dna1_fasta_lines)
+# dna2 = get_seq(dna2_fasta_lines)
 
-pam250 = substitution_matrices.load("PAM250")
-# print("pam250:")
-# print(pam250)
+# dna1_len = len(dna1)
+# dna2_len = len(dna2)
 
-protein1 = get_seq(protein1_fasta_lines)
-protein2 = get_seq(protein2_fasta_lines)
+# score_matrix = np.zeros((dna1_len + 1, dna2_len + 1))
+# traceback_matrix = np.zeros((dna1_len + 1, dna2_len + 1))
 
-protein1_len = len(protein1)
-protein2_len = len(protein2)
+# best_score, best_y, best_x = waterman_dna(dna1, dna2)
+# # print(best_score, best_y, best_x)
 
-protein_matrix_score = np.zeros((protein1_len + 1, protein2_len + 1))
-protein_matrix_traceback = np.zeros((protein1_len + 1, protein2_len + 1))
+# aligned1, aligned2 = traceback(dna1, dna2, best_y, best_x)
 
-best_score, best_y, best_x = waterman_protein(protein1, protein2)
-# print(best_score, best_y, best_x)
+# print_aligned(aligned1, aligned2)
 
-aligned1, aligned2 = traceback(protein1, protein2, best_y, best_x)
-print_aligned(aligned1, aligned2)
+# # protein seq
+# protein1_fasta_lines = open("protein1.fasta" , "r").readlines()
+# protein2_fasta_lines = open("protein2.fasta" , "r").readlines()
+
+# pam250 = substitution_matrices.load("PAM250")
+# # print("pam250:")
+# # print(pam250)
+
+# protein1 = get_seq(protein1_fasta_lines)
+# protein2 = get_seq(protein2_fasta_lines)
+
+# protein1_len = len(protein1)
+# protein2_len = len(protein2)
+
+# protein_matrix_score = np.zeros((protein1_len + 1, protein2_len + 1))
+# protein_matrix_traceback = np.zeros((protein1_len + 1, protein2_len + 1))
+
+# best_score, best_y, best_x = waterman_protein(protein1, protein2)
+# # print(best_score, best_y, best_x)
+
+# aligned1, aligned2 = traceback(protein1, protein2, best_y, best_x)
+# print_aligned(aligned1, aligned2)

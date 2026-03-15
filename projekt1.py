@@ -38,8 +38,8 @@ def score_protein(a, b):
     return pam250[a, b]
 
 
-# function implementing waterman for dna
-def waterman_dna(seq1, seq2, score_matrix, traceback_matrix, score):
+# function implementing waterman
+def waterman(seq1, seq2, score_matrix, traceback_matrix, score):
 
     seq1_len = len(seq1)
     seq2_len = len(seq2)
@@ -69,6 +69,8 @@ def waterman_dna(seq1, seq2, score_matrix, traceback_matrix, score):
                 best_score = best
                 best_y, best_x = y, x
 
+    # print(score_matrix)
+    # print(traceback_matrix)
     return best_y, best_x
 
 
@@ -130,15 +132,15 @@ def main(path_file1, path_file2, dna):
     traceback_matrix = np.zeros((seq1_len + 1, seq2_len + 1))
 
     if dna:
-        best_y, best_x = waterman_dna(seq1, seq2, score_matrix, traceback_matrix, score_dna)
+        best_y, best_x = waterman(seq1, seq2, score_matrix, traceback_matrix, score_dna)
     else:
-        best_y, best_x = waterman_dna(seq1, seq2, score_matrix, traceback_matrix, score_protein)
+        best_y, best_x = waterman(seq1, seq2, score_matrix, traceback_matrix, score_protein)
     
     aligned1, aligned2 = traceback(seq1, seq2, best_y, best_x, traceback_matrix)
 
     print_aligned(aligned1, aligned2)
 
 
-# filepath, filepath, DNA/PROTEIN
+# filepath_1, filepath_2, DNA/PROTEIN
 main("./dna1.fasta", "./dna2.fasta", DNA)
 main("./protein1.fasta", "./protein2.fasta", PROTEIN)

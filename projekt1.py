@@ -14,6 +14,7 @@ LEFT        = 3
 DNA         = 1
 PROTEIN     = 0
 
+pam250  = substitution_matrices.load("PAM250")
 
 # function for extracting dna seq from fasta lines (only for 1 seq)
 def get_seq(fasta_lines):
@@ -34,7 +35,6 @@ def score_dna(a, b):
 
 # function to comapre the things in PROTEIN
 def score_protein(a, b):
-    pam250  = substitution_matrices.load("PAM250")
     return pam250[a, b]
 
 

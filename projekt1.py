@@ -104,6 +104,21 @@ def traceback(seq1, seq2, best_y, best_x, traceback_matrix):
 
 
 # function for pretty print
+def write_aligned(aligned1, aligned2, result_file_name):
+    file = open(result_file_name, "w")
+    middle = ""
+    for i in range(len(aligned1)):
+        if aligned1[i] == aligned2[i]:
+            middle += "|"
+        else:
+            middle += " "
+    
+    file.write(f"aligned1:\t{aligned1}\n")
+    file.write(f"\t\t\t{middle}\n")
+    file.write(f"aligned2:\t{aligned2}\n")
+
+
+# function for pretty print
 def print_aligned(aligned1, aligned2):
     middle = ""
     for i in range(len(aligned1)):
@@ -118,7 +133,7 @@ def print_aligned(aligned1, aligned2):
 
 
 # function to exec alignment
-def main(path_file1, path_file2, dna):
+def main(path_file1, path_file2, dna, result_file_name):
     file1_fasta_lines = open(f"{path_file1}" , "r").readlines()
     file2_fasta_lines = open(f"{path_file2}" , "r").readlines()
 
@@ -139,8 +154,9 @@ def main(path_file1, path_file2, dna):
     aligned1, aligned2 = traceback(seq1, seq2, best_y, best_x, traceback_matrix)
 
     print_aligned(aligned1, aligned2)
+    write_aligned(aligned1, aligned2, result_file_name)
 
 
-# filepath_1, filepath_2, DNA/PROTEIN
-main("./dna1.fasta", "./dna2.fasta", DNA)
-main("./protein1.fasta", "./protein2.fasta", PROTEIN)
+# filepath_1, filepath_2, DNA/PROTEIN, result_file_name
+main("./dna1.fasta", "./dna2.fasta", DNA, "result_dna.txt")
+main("./protein1.fasta", "./protein2.fasta", PROTEIN, "result_protein.txt")

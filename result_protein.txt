@@ -1,0 +1,3 @@
+aligned1:	DEFGHI
+			||||||
+aligned2:	DEFGHI
